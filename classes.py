@@ -42,7 +42,8 @@ class DataOFF():
                             product["url"] = r.json()["products"][i]["url"]
                             product["store"] = r.json()['products'][i]['stores']
                             product["category"] = self.catnumber
-                            product["score"] = r.json()["products"][i]["nutrition_grade_fr"]   
+                            product["score"] = r.json()["products"][i]["nutrition_grade_fr"] 
+                            product["store"] = r.json()["products"][i]["stores"] 
                             all_products.append(product)
                     except (TypeError):
                         print ("TypeError!")
@@ -53,11 +54,12 @@ class DataOFF():
         self.products = all_products  
         #print(self.products)
         return(self.products)
-            
-
-#data_off = DataOFF()
-#data_off.get_data()
-
+        """
+connection.commit()
+connection.close()          
+data_off = DataOFF()
+data_off.get_data()
+"""
 
 class DataPB():
     """Claass defines the data which fills the database Pur Beurre """
@@ -81,18 +83,22 @@ class DataPB():
                 cursor.execute(sql_data, category)
 
     def insert_product(self):
+        #self.connect_db()
         """Method which creates new records and commits the changes in the table Product"""
         for prod in self.data_off.get_data():
             #self.catid = int()
             with self.connection.cursor() as cursor:
                 #insert into `product`
-                sql = "INSERT INTO `product` (`name`, `description`, `url`, `score`, `category_id`) VALUES (%s, %s, %s, %s, %s)"
+                sql = "INSERT INTO `product` (`name`, `description`, `url`, `score`, `category_id`, `store`) VALUES (%s, %s, %s, %s, %s, %s)"
                 try:
-                    cursor.execute(sql, (prod['name'], prod['description'], prod['url'], prod['score'], prod['category'])) 
+                    cursor.execute(sql, (prod['name'], prod['description'], prod['url'], prod['score'], prod['category'], prod['store'])) 
                 except:
                     print("error")
             #print(prod)
-    
+        #self.commit_connection()
+        #self.close_connection()
+
+
     def insert_substitute(self):
         """Method which creates new records and commits the changes in the table Substitute"""
         pass
@@ -112,13 +118,18 @@ class DataPB():
             sqlreset = "ALTER TABLE " + whattable + " AUTO_INCREMENT = 1"
             cursor.execute(sqlreset)
 
-    def find_from_table(self, search, colum, table):
+    def find_from_table(self, search, colum, table, how_many):
         self.connect_db()
         with self.connection.cursor() as cursor:
             sql = "SELECT * FROM `" + table + "` WHERE `" + colum + "`=%s"
             cursor.execute(sql, (search))
-            return cursor.fetchone()
+            if how_many == 1: 
+                r = cursor.fetchone()
+            else:
+                r = cursor.fetchall()
         self.close_connection()
+        return r
+        
     
 """
 data_pb = DataPB()
@@ -133,7 +144,7 @@ data_pb.close_connection()
 """
 
 class Display_data():
-    """Claass defines the data """
+    #"""Claass defines the data """
     def __init__(self):
         self.nutridict = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6}
         self.substitute_list = []
@@ -164,11 +175,9 @@ class Display_data():
                 print(str(b) + " : " + category)
                 b += 1
             self.choicecat = int(self.super_input(range(1, len(LIST_CATEGORIES)+1)))
-            with connection.cursor() as cursor:
-                sql = "SELECT `name`, `description`, `url`, `score`, `category_id` FROM `product` WHERE `category_id`=%s"
-                cursor.execute(sql, (self.choicecat))
-                self.result = cursor.fetchall()
-                #print(self.result)
+            
+            #print(self.choicecat)
+            self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", 10)
             print("")
             print("Sélectionnez le produit que vous voulez remplacer.")
             b = 1
@@ -201,16 +210,15 @@ class Display_data():
         print("Description: " + self.substitute_product['description'])
         print("URL: " + self.substitute_product['url'])
         print("NutriScore: " + self.substitute_product['score'])
-        print("Category: " +  self.dataPB.find_from_table(self.substitute_product['category_id'], "id", "category")['name'])
-
-
-
+        print("Category: " +  self.dataPB.find_from_table(self.substitute_product['category_id'], "id", "category", 1)['name'])
+        print("Stores: " + self.substitute_product['store'])
 
 
 displaydata = Display_data()
 displaydata.choose_option()
 displaydata.findsubstutute()
         
+
 
 connection.commit()
 connection.close()
