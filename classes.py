@@ -203,10 +203,6 @@ class Display_data():
         print("NutriScore: " + self.substitute_product['score'])
         print("Category: " +  self.dataPB.find_from_table(self.substitute_product['category_id'], "id", "category")['name'])
 
-        """with connection.cursor() as cursor:
-            sql = "SELECT `name` FROM `category` WHERE `id`=%s"
-            cursor.execute(sql, (self.substitute_product['category_id']))
-            print("Category: " + cursor.fetchone()['name'])"""
 
 
 
