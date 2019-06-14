@@ -88,7 +88,7 @@ class DataPB():
                 try:
                     cursor.execute(sql, (prod['name'], prod['description'], prod['url'], prod['score'], prod['category'], prod['store'])) 
                 except:
-                    print("error")     
+                    print("error")    
         self.commit_connection()
         self.close_connection()
 
@@ -112,8 +112,16 @@ class DataPB():
             else:
                 r = cursor.fetchall()
         self.close_connection()
-        return r
+        return r  
     
+    def insert_substitute(self, id1 = None, id2 = None):
+        self.connect_db()
+        with self.connection.cursor() as cursor:
+            sql = "INSERT INTO `substitute` (`usual_product_id`, `healthy_product_id`) VALUES (%s, %s)"
+            cursor.execute(sql, (id1, id2))    
+        self.commit_connection()
+        self.close_connection()
+
 
 class Display_data():
     """Claass defines the data """
@@ -144,7 +152,7 @@ class Display_data():
                 print(str(b) + " : " + category)
                 b += 1
             self.choicecat = int(self.super_input(range(1, len(LIST_CATEGORIES)+1)))
-            self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", 10)
+            self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", NUM_PRODUCTS)
             print("")
             print("Sélectionnez le produit que vous voulez remplacer et entrez son numéro:")
             b = 1
@@ -178,3 +186,19 @@ class Display_data():
         print("NutriScore : " + self.substitute_product['score'])
         print("Catégorie : " +  self.dataPB.find_from_table(self.substitute_product['category_id'], "id", "category", 1)['name'])
         print("Où acheter : " + self.substitute_product['store'])
+
+    def add_data_choice(self):
+        id1 = str(self.dataPB.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
+        id2 = str(self.dataPB.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
+        self.dataPB.insert_substitute(id1, id2)
+        
+
+class Saved_Data():
+    """ """
+    def __init__(self):
+     pass
+
+
+
+
+
