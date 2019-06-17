@@ -1,11 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: Utf-8 -*
 
-import requests
-import mysql
-import pymysql
-import pymysql.cursors
-
 from classes import DataOFF, DataPB, Display_data
 
 data_off = DataOFF()

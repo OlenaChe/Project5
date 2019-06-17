@@ -1,7 +1,5 @@
 import requests
-import mysql
 import pymysql
-import pymysql.cursors
 
 from constants import *
 from private import *
@@ -197,8 +195,3 @@ class Saved_Data():
     """ """
     def __init__(self):
      pass
-
-
-
-
-
