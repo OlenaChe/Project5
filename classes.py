@@ -36,9 +36,11 @@ class DataOFF():
                             product["store"] = r.json()["products"][i]["stores"] 
                             all_products.append(product)
                     except (TypeError):
-                        print ("TypeError!")
+                        #print ("TypeError!")
+                        pass
                     except (KeyError):
-                        print ("That key does not exist!")
+                        #print ("That key does not exist!")
+                        pass
                     i += 1
             self.cat_number += 1
         self.products = all_products  
@@ -103,7 +105,7 @@ class DataPB():
     def find_from_table(self, search, column, table, how_many):
         self.connect_db()
         with self.connection.cursor() as cursor:
-            sql = "SELECT * FROM `" + table + "` WHERE `" + column + "`=%s"
+            sql = "SELECT DISTINCT * FROM `" + table + "` WHERE `" + column + "`=%s"
             cursor.execute(sql, (search))
             if how_many == 1: 
                 r = cursor.fetchone()
@@ -120,6 +122,17 @@ class DataPB():
         self.commit_connection()
         self.close_connection()
 
+    def sql(self, sql, optional):
+        self.connect_db()
+        with self.connection.cursor() as cursor:
+            cursor.execute(sql)
+            if optional == "one": 
+                r = cursor.fetchone()
+            elif optional == "all":
+                r = cursor.fetchall()
+        self.close_connection()
+        return r  
+
 
 class Display_data():
     """Claass defines the data """
@@ -128,6 +141,7 @@ class Display_data():
         self.substitute_list = []
         self.result = None
         self.dataPB = DataPB()
+        self.saved_data = Saved_data()
 
     def nutricompare(self, score1, score2):
         return self.nutridict[score1] < self.nutridict[score2]
@@ -138,34 +152,38 @@ class Display_data():
             for input1 in acsepted_inputs:
                 if str(input1) == theinput:
                     return theinput
-            print("Mauvais numéro. Retapez s'il vous plaît") 
-
-    def choose_option(self):
-        print("Choisissez l'option et entrez le chiffre correspondant: 1 - Quel aliment souhaitez-vous remplacer ? 2 - Retrouver mes aliments substitués.")
-        self.choice = self.super_input(['1','2'])
-        if self.choice == "1":
-            print("Choisissez la catégorie et entrez son numéro:")
-            b = 1
-            for category in LIST_CATEGORIES:
-                print(str(b) + " : " + category)
-                b += 1
-            self.choicecat = int(self.super_input(range(1, len(LIST_CATEGORIES)+1)))
-            self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", NUM_PRODUCTS)
             print("")
-            print("Sélectionnez le produit que vous voulez remplacer et entrez son numéro:")
-            b = 1
-            self.choices = {}
-            for product in self.result:
-                self.choices[b] = product
-                print(str(b) + " : " + product['name'])
-                b += 1
-            self.chosenproduct = self.choices[int(self.super_input(range(1, len(self.choices)+1)))]
+            print("Erreur. Vous avez entré un mauvais caractère'")
+            print("Retapez, s'il vous plaît")
+    def choose_option(self):
+        #print("Choisissez l'option et entrez le chiffre correspondant: 1 - Quel aliment souhaitez-vous remplacer ? 2 - Retrouver mes aliments substitués. Q - Quitter")
+        #self.choice = self.super_input(['1', '2', 'Q'])
+        #if self.choice == "1":
+        #print("Choisissez la catégorie et entrez son numéro:")
+        b = 1
+        print("Choisissez une catégorie et entrez son numéro :")
+        for category in LIST_CATEGORIES:
+            print(str(b) + " : " + category)
+            b += 1
+        print("")    
+        self.choicecat = int(self.super_input(range(1, len(LIST_CATEGORIES)+1)))
+        self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", NUM_PRODUCTS)
+        print("")
+        print("Sélectionnez le produit que vous voulez remplacer et entrez son numéro:")
+        b = 1
+        self.choices = {}
+        for product in self.result:
+            self.choices[b] = product
+            print(str(b) + " : " + product['name']+ ", " + product['score'])
+            b += 1
+        print("")
+        self.chosenproduct = self.choices[int(self.super_input(range(1, len(self.choices)+1)))]
 
     def findsubstutute(self):
         for product in self.result:
             if self.nutricompare(product['score'], self.chosenproduct['score']):
                 self.substitute_list.append(product)
-        print('')
+        print("")
         print("Choisissez votre substitué et entrez son numéro:")
         b = 1
         self.choices = {}
@@ -173,12 +191,14 @@ class Display_data():
             self.choices[b] = product
             print(str(b) + " : " + product['name'] + ", " + product['score'])
             b +=1
+        print("")
         if len(self.choices) == 0:
-            print("Désolé, il n'y a pas de produit plus sain que le vôtre dans cette catégorie ")
+            print("Il n'y a pas de produit plus sain que le vôtre dans cette catégorie ")
             self.substitute_product = self.chosenproduct
         else:
             self.substitute_product = self.choices[int(self.super_input(range(1, len(self.substitute_list)+1)))]
-        print("Vous avez choisi " + self.substitute_product['name'])
+        print("")
+        print("Vous avez choisi : " + self.substitute_product['name'])
         print("Description : " + self.substitute_product['description'])
         print("URL : " + self.substitute_product['url'])
         print("NutriScore : " + self.substitute_product['score'])
@@ -186,12 +206,32 @@ class Display_data():
         print("Où acheter : " + self.substitute_product['store'])
 
     def add_data_choice(self):
-        id1 = str(self.dataPB.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
-        id2 = str(self.dataPB.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
-        self.dataPB.insert_substitute(id1, id2)
-        
+        print("")
+        print("Souhaitez-vous ajouter cet aliment à votre liste des produits sains ? Entrez 'OUI' ou 'NON'?")
+        if self.super_input(["OUI", "NON"]) == "OUI":
+            id1 = str(self.dataPB.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
+            id2 = str(self.dataPB.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
+            self.dataPB.insert_substitute(id1, id2)
+            print("")
+            print("Le produit est ajouté dans la liste")
 
-class Saved_Data():
-    """ """
-    def __init__(self):
-     pass
+
+
+class Saved_data():
+    """Claass defines the data """
+
+    def display_result(self, result):
+        #print("Vous avez sélectionné les produits suivants :")
+        n = 1
+        for dic in result:
+            print("")
+            print(n)
+            print("")
+            print("NOM DU PRODUIT SÉLECTIONNÉ : "+dic['produit'])
+            print("DESCRIPTION : "+dic['description'])
+            print("NUTRISCORE : "+dic['n_s'])
+            print("URL : "+dic['url'])
+            print("OÙ ACHETER : "+dic['magasins'])
+            print("")
+            n += 1
+    
