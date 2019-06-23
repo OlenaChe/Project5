@@ -1,0 +1,4 @@
+HOST ='votre_host'
+USER ='userBDD'
+PASSWORD = 'mot_de_pass'
+DB = 'projet5'

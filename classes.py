@@ -4,7 +4,7 @@ import pymysql
 from constants import *
 from private import *
 
-class DataOFF():
+class Data_OFF():
     """Class defines the data which we want to get from Open Food Facts using the library request"""
     def __init__(self):
         self.categories = LIST_CATEGORIES      
@@ -36,10 +36,8 @@ class DataOFF():
                             product["store"] = r.json()["products"][i]["stores"] 
                             all_products.append(product)
                     except (TypeError):
-                        #print ("TypeError!")
                         pass
                     except (KeyError):
-                        #print ("That key does not exist!")
                         pass
                     i += 1
             self.cat_number += 1
@@ -47,10 +45,10 @@ class DataOFF():
         return(self.products)
       
 
-class DataPB():
-    """Claass defines the data which fills the database Pur Beurre """
+class Data_PB():
+    """Claass defines the data which fills the database Pur Beurre"""
     def __init__(self):
-        self.data_off = DataOFF()
+        self.data_off = Data_OFF()
 
     def connect_db(self): 
         """Method which creates la connection with the database Pur Beurre"""       
@@ -62,15 +60,15 @@ class DataPB():
                                 cursorclass=pymysql.cursors.DictCursor)
 
     def commit_connection(self):
-        """Method which commit the changes"""
+        """Method which commit the changes with the database Pur Beurre"""
         self.connection.commit()
             
     def close_connection(self):
-        """Method which closes the connection"""
+        """Method which closes the connection with the database Pur Beurre"""
         self.connection.close()
 
     def insert_category(self):
-        """Method which creates new records and commits the changes in the table category"""
+        """Method which creates new records and commits the changes in the table 'category'"""
         self.connect_db()
         for category in LIST_CATEGORIES:
             with self.connection.cursor() as cursor:
@@ -80,7 +78,7 @@ class DataPB():
         self.close_connection()
 
     def insert_product(self):
-        """Method which creates new records and commits the changes in the table Product"""
+        """Method which creates new records and commits the changes in the table 'product'"""
         self.connect_db()
         for prod in self.data_off.get_data():
             with self.connection.cursor() as cursor:
@@ -93,6 +91,7 @@ class DataPB():
         self.close_connection()
 
     def clean(self, whattable):
+        """Method which resets the table"""
         self.connect_db()
         with self.connection.cursor() as cursor:
             sqlclean = "DELETE FROM " + whattable
@@ -103,6 +102,7 @@ class DataPB():
         self.close_connection()
 
     def find_from_table(self, search, column, table, how_many):
+        """Method which gets the specific data from the table"""
         self.connect_db()
         with self.connection.cursor() as cursor:
             sql = "SELECT DISTINCT * FROM `" + table + "` WHERE `" + column + "`=%s"
@@ -115,6 +115,7 @@ class DataPB():
         return r  
     
     def insert_substitute(self, id1 = None, id2 = None):
+        """Method which fils the table 'substitute'"""
         self.connect_db()
         with self.connection.cursor() as cursor:
             sql = "INSERT INTO `substitute` (`usual_product_id`, `healthy_product_id`) VALUES (%s, %s)"
@@ -123,6 +124,7 @@ class DataPB():
         self.close_connection()
 
     def sql(self, sql, optional):
+        """Method which executes my sql code"""
         self.connect_db()
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
@@ -135,31 +137,32 @@ class DataPB():
 
 
 class Display_data():
-    """Claass defines the data """
+    """Claass defines the data which enables the user to interact with DB"""
     def __init__(self):
         self.nutridict = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6}
         self.substitute_list = []
         self.result = None
-        self.dataPB = DataPB()
+        self.dataPB = Data_PB()
         self.saved_data = Saved_data()
 
     def nutricompare(self, score1, score2):
+        """Method which compares the nutriscores of two products"""
         return self.nutridict[score1] < self.nutridict[score2]
 
     def super_input(self, acsepted_inputs):
+        """Method which checks input for mistakes"""
         while True:
-            theinput = input()
+            the_input = input()
             for input1 in acsepted_inputs:
-                if str(input1) == theinput:
-                    return theinput
+                if str(input1) == the_input:
+                    return the_input
             print("")
             print("Erreur. Vous avez entré un mauvais caractère'")
             print("Retapez, s'il vous plaît")
+            print("")
+    
     def choose_option(self):
-        #print("Choisissez l'option et entrez le chiffre correspondant: 1 - Quel aliment souhaitez-vous remplacer ? 2 - Retrouver mes aliments substitués. Q - Quitter")
-        #self.choice = self.super_input(['1', '2', 'Q'])
-        #if self.choice == "1":
-        #print("Choisissez la catégorie et entrez son numéro:")
+        """Method which asks the user to choose the product that he wants to replace"""
         b = 1
         print("Choisissez une catégorie et entrez son numéro :")
         for category in LIST_CATEGORIES:
@@ -179,7 +182,8 @@ class Display_data():
         print("")
         self.chosenproduct = self.choices[int(self.super_input(range(1, len(self.choices)+1)))]
 
-    def findsubstutute(self):
+    def find_substutute(self):
+        """Method which finds the substitute and displays its description"""
         for product in self.result:
             if self.nutricompare(product['score'], self.chosenproduct['score']):
                 self.substitute_list.append(product)
@@ -206,9 +210,11 @@ class Display_data():
         print("Où acheter : " + self.substitute_product['store'])
 
     def add_data_choice(self):
+        """Method which asks the user to save a substitute product into the list of healthy products"""
         print("")
-        print("Souhaitez-vous ajouter cet aliment à votre liste des produits sains ? Entrez 'OUI' ou 'NON'?")
-        if self.super_input(["OUI", "NON"]) == "OUI":
+        print("Enregistrer le résultat dans là votre liste des produits sains ? Si oui, tapez 'Y'. Si non, tapez 'N'.")
+        print("")
+        if self.super_input(["Y", "N"]) == "Y":
             id1 = str(self.dataPB.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
             id2 = str(self.dataPB.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
             self.dataPB.insert_substitute(id1, id2)
@@ -216,12 +222,11 @@ class Display_data():
             print("Le produit est ajouté dans la liste")
 
 
-
 class Saved_data():
-    """Claass defines the data """
+    """Claass defines the data which the user saves"""
 
     def display_result(self, result):
-        #print("Vous avez sélectionné les produits suivants :")
+        """Method which displays the saved list of healthy products"""
         n = 1
         for dic in result:
             print("")
@@ -234,4 +239,3 @@ class Saved_data():
             print("OÙ ACHETER : "+dic['magasins'])
             print("")
             n += 1
-    

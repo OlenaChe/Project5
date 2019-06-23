@@ -1,39 +1,47 @@
 #!/usr/bin/python3
 # -*- coding: Utf-8 -*
 
-from classes import DataOFF, DataPB, Display_data, Saved_data
+from classes import Data_OFF, Data_PB, Display_data, Saved_data
 
-data_off = DataOFF()
-data_pb = DataPB()
-displaydata = Display_data()
+data_off = Data_OFF()
+data_pb = Data_PB()
+display_data = Display_data()
 saved_data = Saved_data()
 
-data_off.get_data()
-
-data_pb.clean("substitute")
-data_pb.clean("product")
-data_pb.clean("category")
-data_pb.insert_category()
-data_pb.insert_product()
-
-displaydata.session = True
-while displaydata.session:
+print("")
+print("Bonjour!")
+print("Si vous utilisez l'application 'Pur Beurre' la première fois, tapez '0' ")
+print("Sinon, tapez '1'")
+print("")
+if display_data.super_input(['0', '1']) == '0':
+    data_off.get_data()
+    data_pb.clean("substitute")
+    data_pb.clean("product")
+    data_pb.clean("category")
+    data_pb.insert_category()
+    data_pb.insert_product()
+    
+display_data.session = True
+while display_data.session:
     print("")
-    print("Choisissez l'option et entrez le chiffre correspondant: 1 - Quel aliment souhaitez-vous remplacer ? 2 - Retrouver mes aliments substitués. Q - Quitter")
+    print("Choisissez l'option et entrez le chiffre correspondant :") 
+    print("1 - Quel aliment souhaitez-vous remplacer ?")
+    print("2 - Retrouver mes aliments substitués")
+    print("Q - Quitter")
     print("")
-    choice = displaydata.super_input(['1', '2', 'Q'])
+    choice = display_data.super_input(['1', '2', 'Q'])
     print("")
     if choice == "1":
         print("")
-        displaydata.choose_option()
-        displaydata.findsubstutute()
-        displaydata.add_data_choice()
+        display_data.choose_option()
+        display_data.find_substutute()
+        display_data.add_data_choice()
     elif choice == "2":
         print("")
         print("VOILÀ VOTRE LISTE DES PRODUITS SAINS :")
-        displaydata.saved_data.display_result(displaydata.dataPB.sql("SELECT DISTINCT product.name as produit, product.description, product.score as n_s, product.url, product.store as magasins FROM product INNER JOIN substitute ON product.id = substitute.healthy_product_id", "all"))
+        display_data.saved_data.display_result(display_data.dataPB.sql("SELECT DISTINCT product.name as produit, product.description, product.score as n_s, product.url, product.store as magasins FROM product INNER JOIN substitute ON product.id = substitute.healthy_product_id", "all"))
     elif choice == "Q":
-        displaydata.session = False
+        display_data.session = False
     
     
 
