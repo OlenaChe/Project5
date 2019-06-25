@@ -2,7 +2,7 @@ import requests
 import pymysql
 
 from constants import *
-from private import *
+from private import * 
 
 class Data_OFF():
     """Class defines the data which we want to get from Open Food Facts using the library request"""
@@ -55,7 +55,7 @@ class Data_PB():
         self.connection = pymysql.connect(host=HOST,
                                 user=USER,
                                 password=PASSWORD,
-                                db=DB,
+                                db='Project5',
                                 charset='utf8mb4',
                                 cursorclass=pymysql.cursors.DictCursor)
 
@@ -94,10 +94,10 @@ class Data_PB():
         """Method which resets the table"""
         self.connect_db()
         with self.connection.cursor() as cursor:
-            sqlclean = "DELETE FROM " + whattable
-            cursor.execute(sqlclean)
-            sqlreset = "ALTER TABLE " + whattable + " AUTO_INCREMENT = 1"
-            cursor.execute(sqlreset)
+            sql_clean = "DELETE FROM " + whattable
+            cursor.execute(sql_clean)
+            sql_reset = "ALTER TABLE " + whattable + " AUTO_INCREMENT = 1"
+            cursor.execute(sql_reset)
         self.commit_connection()
         self.close_connection()
 
@@ -124,7 +124,7 @@ class Data_PB():
         self.close_connection()
 
     def sql(self, sql, optional):
-        """Method which executes my sql code"""
+        """Method which executes mysql code"""
         self.connect_db()
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
@@ -142,18 +142,18 @@ class Display_data():
         self.nutridict = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6}
         self.substitute_list = []
         self.result = None
-        self.dataPB = Data_PB()
+        self.data_pb = Data_PB()
         self.saved_data = Saved_data()
 
     def nutricompare(self, score1, score2):
         """Method which compares the nutriscores of two products"""
         return self.nutridict[score1] < self.nutridict[score2]
 
-    def super_input(self, acsepted_inputs):
+    def super_input(self, accepted_inputs):
         """Method which checks input for mistakes"""
         while True:
             the_input = input()
-            for input1 in acsepted_inputs:
+            for input1 in accepted_inputs:
                 if str(input1) == the_input:
                     return the_input
             print("")
@@ -170,7 +170,7 @@ class Display_data():
             b += 1
         print("")    
         self.choicecat = int(self.super_input(range(1, len(LIST_CATEGORIES)+1)))
-        self.result = self.dataPB.find_from_table(self.choicecat, "category_id", "product", NUM_PRODUCTS)
+        self.result = self.data_pb.find_from_table(self.choicecat, "category_id", "product", NUM_PRODUCTS)
         print("")
         print("Sélectionnez le produit que vous voulez remplacer et entrez son numéro:")
         b = 1
@@ -188,7 +188,7 @@ class Display_data():
             if self.nutricompare(product['score'], self.chosenproduct['score']):
                 self.substitute_list.append(product)
         print("")
-        print("Choisissez votre substitué et entrez son numéro:")
+        print("Choisissez un substitut et entrez son numéro:")
         b = 1
         self.choices = {}
         for product in self.substitute_list:
@@ -206,7 +206,7 @@ class Display_data():
         print("Description : " + self.substitute_product['description'])
         print("URL : " + self.substitute_product['url'])
         print("NutriScore : " + self.substitute_product['score'])
-        print("Catégorie : " +  self.dataPB.find_from_table(self.substitute_product['category_id'], "id", "category", 1)['name'])
+        print("Catégorie : " +  self.data_pb.find_from_table(self.substitute_product['category_id'], "id", "category", 1)['name'])
         print("Où acheter : " + self.substitute_product['store'])
 
     def add_data_choice(self):
@@ -215,9 +215,9 @@ class Display_data():
         print("Enregistrer le résultat dans là votre liste des produits sains ? Si oui, tapez 'Y'. Si non, tapez 'N'.")
         print("")
         if self.super_input(["Y", "N"]) == "Y":
-            id1 = str(self.dataPB.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
-            id2 = str(self.dataPB.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
-            self.dataPB.insert_substitute(id1, id2)
+            id1 = str(self.data_pb.find_from_table(self.chosenproduct['id'], "id", "product", 1)['id'])
+            id2 = str(self.data_pb.find_from_table(self.substitute_product['id'], "id", "product", 1)['id'])
+            self.data_pb.insert_substitute(id1, id2)
             print("")
             print("Le produit est ajouté dans la liste")
 

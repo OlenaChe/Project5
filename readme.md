@@ -1,8 +1,9 @@
-Le programme Pur Beurre est destiné à chercher des substituts plus sains aux produits réguliers et à créer d’une liste des aliments sains selon le choix d’utilisateur.
+Le programme Pur Beurre est destiné à chercher des substituts plus sains aux produits réguliers et à créer une liste des aliments sains selon le choix d’utilisateur.
 
 Pour démarrer le programme l'utilisateur doit :
+- installer MySQL,
 - renommer un fichier "template.txt" en "private.py", 
-- remplacer le texte entre guillemets par les valeurs pertinentes,
+- remplacer le texte entre guillemets par les valeurs pertinentes (HOST, USER, PASSWORD),
 - lancer un fichier "pb_app.py" dans le Terminal.
 
 Après le démarrage du programme l’utilisateur voit les instructions étape par étape.

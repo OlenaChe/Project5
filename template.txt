@@ -1,4 +1,3 @@
 HOST ='votre_host'
-USER ='userBDD'
+USER ='nom_utilisateur'
 PASSWORD = 'mot_de_pass'
-DB = 'projet5'
