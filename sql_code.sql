@@ -3,7 +3,7 @@ CREATE DATABASE Project5;
 USE Project5;
 
 CREATE TABLE category (
-  id SMALLINT NOT NULL AUTO_INCREMENT = 1,
+  id SMALLINT NOT NULL AUTO_INCREMENT=1,
   name VARCHAR(45) NOT NULL,
   PRIMARY KEY (id))
 ENGINE = InnoDB;
@@ -32,8 +32,8 @@ CREATE TABLE substitute (
   INDEX fk_substitute_product2_idx (healthy_product_id ASC) VISIBLE,
   CONSTRAINT fk_substitute_product1
     FOREIGN KEY (usual_product_id)
-    REFERENCES product.id,
+    REFERENCES product(id),
   CONSTRAINT fk_substitute_product2
     FOREIGN KEY (healthy_product_id)
-    REFERENCES product (id))
+    REFERENCES product(id))
 ENGINE = InnoDB;
