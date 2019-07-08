@@ -57,4 +57,3 @@ Pour réaliser les fonctionnalités du programme on a créé les classes suivant
 2) class Data_PB pour créer notre base de donné avec MySql
 3) classe Display_data pour réaliser l’interaction de l’utilisateur avec la BdD
 4) classe Saved_data pour afficher les résultats de requête.
-

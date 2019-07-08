@@ -18,23 +18,14 @@ print("")
 if display_data.super_input(['0', '1']) == '0':
     print("Attendez quelques instants, s'il vous plaît ")
     data_off.get_data()
-    # print("Get data over")
     data_pb.connect()
     data_pb.drop_db()
     data_pb.create_db()
     data_pb.create_category()
     data_pb.create_product()
     data_pb.create_substitute()
-    # data_pb.clean("substitute")
-    # print("clean substitute over")
-    # data_pb.clean("product")
-    # print("clean product over")
-    # data_pb.clean("category")
-    # print("clean category over")
     data_pb.insert_category()
-    # print("insert category over")
     data_pb.insert_product()
-    # print("insert product over")
 
 display_data.session = True
 while display_data.session:
